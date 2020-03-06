@@ -1,62 +1,43 @@
-import React, { Component } from 'react';
-import { Grid } from '@material-ui/core';
-import { SearchBar, VideoDetail, VideoList } from './components';
-import youtube from './youtube/youtube'
+import React, { useState } from "react";
+import { Grid } from "@material-ui/core";
 
-class App extends Component {
-  state = {
-    videos: [],
-    selectedVideo: null
-  }
-  componentDidMount() {
-    this.handleSubmit('tech tology')
-  }
-  onVideoSelected = (video) => {
-    this.setState({
-      selectedVideo: video
-    });
-  }
-  handleSubmit = async (searchTerm) => {
-    const response = await youtube.api('search', {
-      params: {
-        part: 'snippet',
-        maxResults: 5,
-        key: 'AIzaSyBTHwD3oy0xhntLeWCC4v7_RadSHaBYZnI',
-        q: searchTerm,
-      }
-    })
-    this.setState({
-      videos: response.data.items,
-      selectedVideo: response.data.videos
-    })
+import { SearchBar, VideoList, VideoDetail } from "./components";
 
-    console.log(this.videos);
-  }
+import youtube from "./api/youtube";
 
-  render() {
-    const { selectedVideo, video } = this.state
-    return (
-      <div className="App">
-        <Grid justify="center" container spacing={10}>
-          <Grid item xs={11}>
-            <Grid container spacing={10}>
-              <Grid item xs={12}>
-                <SearchBar onFormSubmit={this.handleSubmit} />
-              </Grid>
-              <Grid item xs={8}>
-                <VideoDetail video={this.selectedVideo} />
-              </Grid>
-              <Grid item xs={4}>
-                <VideoList videos={videos} onVideoSelected={} />
-              </Grid>
-            </Grid>
+export default () => {
+  const [videos, setVideos] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
+  return (
+    <Grid style={{ justifyContent: "center" }} container spacing={10}>
+      <Grid item xs={11}>
+        <Grid container spacing={10}>
+          <Grid item xs={12}>
+            <SearchBar onSubmit={handleSubmit} />
+          </Grid>
+          <Grid item xs={8}>
+            <VideoDetail video={selectedVideo} />
+          </Grid>
+          <Grid item xs={4}>
+            <VideoList videos={videos} onVideoSelect={setSelectedVideo} />
           </Grid>
         </Grid>
-      </div>
-    );
+      </Grid>
+    </Grid>
+  );
+
+  async function handleSubmit(searchTerm) {
+    const { data: { items: videos } } = await youtube.get("search", {
+      params: {
+        part: "snippet",
+        maxResults: 5,
+        key: process.env.REACT_APP_API_KEY,
+        q: searchTerm,
+      }
+    });
+
+    setVideos(videos);
+    setSelectedVideo(videos[0]);
   }
 }
-
-export default App;
-
-
